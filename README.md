@@ -37,10 +37,11 @@ RABBITMQ_PASSWORD=rabbitpassword
 RABBITMQ_HOST=rabbit
 ```
 
-2. Ejecutar el siguiente comando (debe modificar la linea de curl si desea utilizar otra imagen). Copie el TASK_ID obtenido como respuesta.
+2. Ejecutar el siguiente comando (debe modificar la linea de curl si desea utilizar otra imagen). Para este paso es necesario contar con el archivo con las keys (credentials.json) en el directorio raiz del proyecto. También deberá actualizar los valores de variables en el código terraform para adecuarlo a su proyecto GCP.
 
 ```bash
 sh runner.sh
 ```
+Copie el TASK_ID obtenido como respuesta.
 
 3. Abra el navegador y pegue la siguiente URL `http://localhost:5001/api/results/<TASK_ID>`, reemplazando el valor de TASK_ID obtenido en el paso anterior. El JSON que muestra como respuesta indica el estado de la tarea. Cuando la tarea esté completa, le mostrará la URL que le permitirá obtener la imagen sobel final.
