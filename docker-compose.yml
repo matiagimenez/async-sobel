@@ -1,0 +1,154 @@
+version: '3.8'
+services:
+    redis:
+        container_name: redis
+        image: redis:alpine3.19
+        restart: always
+        ports:
+            - '6379:6379'
+        volumes:
+            - ./redis:/data
+        networks:
+            - sobel-network
+    rabbitmq:
+        container_name: rabbit
+        image: rabbitmq:3.13-management
+        restart: always
+        hostname: 'rabbit'
+        volumes:
+            - ./rabbitmq/data:/var/lib/rabbitmq
+        ports:
+            - '15672:15672'
+        environment:
+            - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+            - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+        networks:
+            - sobel-network
+    entry-server:
+        container_name: entry-server
+        image: fedesin31/entry-server
+        ports:
+            - '5001:5000'
+        environment:
+            - SPLIT_SERVICE_URL=${SPLIT_SERVICE_URL}
+            - BUCKET_NAME=${BUCKET_NAME}
+            - CREDENTIALS_PATH=/credentials/credentials.json
+        volumes:
+            - ./credentials.json:/credentials/credentials.json
+        networks:
+            - sobel-network
+    split-service:
+        depends_on:
+            - redis
+            - entry-server
+            - rabbitmq
+        container_name: split-service
+        image: fedesin31/split-service
+        volumes:
+            - ./credentials.json:/credentials/credentials.json
+        ports:
+            - '5000'
+        environment:
+            - FRAGMENTS_COUNT=${FRAGMENTS_COUNT}
+            - REDIS_HOST=redis
+            - REDIS_PORT=${REDIS_PORT}
+            - BUCKET_NAME=${BUCKET_NAME}
+            - CREDENTIALS_PATH=/credentials/credentials.json
+            - RABBITMQ_HOST=rabbit
+            - RABBITMQ_USER=${RABBITMQ_USER}
+            - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+        networks:
+            - sobel-network
+    sobel-service-1:
+        depends_on:
+            - rabbitmq
+        container_name: sobel-service-1
+        image: fedesin31/sobel-service
+        volumes:
+            - ./credentials.json:/credentials/credentials.json
+        ports:
+            - '5000'
+        environment:
+            - BUCKET_NAME=${BUCKET_NAME}
+            - CREDENTIALS_PATH=/credentials/credentials.json
+            - RABBITMQ_HOST=rabbit
+            - RABBITMQ_USER=${RABBITMQ_USER}
+            - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+        networks:
+            - sobel-network
+    sobel-service-2:
+        depends_on:
+            - rabbitmq
+        container_name: sobel-service-2
+        image: fedesin31/sobel-service
+        volumes:
+            - ./credentials.json:/credentials/credentials.json
+        ports:
+            - '5000'
+        environment:
+            - BUCKET_NAME=${BUCKET_NAME}
+            - CREDENTIALS_PATH=/credentials/credentials.json
+            - RABBITMQ_HOST=rabbit
+            - RABBITMQ_USER=${RABBITMQ_USER}
+            - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+        networks:
+            - sobel-network
+    sobel-service-3:
+        depends_on:
+            - rabbitmq
+        container_name: sobel-service-3
+        image: fedesin31/sobel-service
+        volumes:
+            - ./credentials.json:/credentials/credentials.json
+        ports:
+            - '5000'
+        environment:
+            - BUCKET_NAME=${BUCKET_NAME}
+            - CREDENTIALS_PATH=/credentials/credentials.json
+            - RABBITMQ_HOST=rabbit
+            - RABBITMQ_USER=${RABBITMQ_USER}
+            - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+        networks:
+            - sobel-network
+    join-service-1:
+        depends_on:
+            - rabbitmq
+            - redis
+        container_name: join-service-1
+        image: fedesin31/join-service
+        volumes:
+            - ./credentials.json:/credentials/credentials.json
+        ports:
+            - '5000'
+        environment:
+            - REDIS_HOST=redis
+            - REDIS_PORT=${REDIS_PORT}
+            - BUCKET_NAME=${BUCKET_NAME}
+            - CREDENTIALS_PATH=/credentials/credentials.json
+            - RABBITMQ_HOST=rabbit
+            - RABBITMQ_USER=${RABBITMQ_USER}
+            - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+        networks:
+            - sobel-network
+    join-service-2:
+        depends_on:
+            - rabbitmq
+            - redis
+        container_name: join-service-2
+        image: fedesin31/join-service
+        volumes:
+            - ./credentials.json:/credentials/credentials.json
+        ports:
+            - '5000'
+        environment:
+            - REDIS_HOST=redis
+            - REDIS_PORT=${REDIS_PORT}
+            - BUCKET_NAME=${BUCKET_NAME}
+            - CREDENTIALS_PATH=/credentials/credentials.json
+            - RABBITMQ_HOST=rabbit
+            - RABBITMQ_USER=${RABBITMQ_USER}
+            - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+        networks:
+            - sobel-network
+networks:
+    sobel-network:

@@ -1,0 +1,6 @@
+.history
+/redis/
+/rabbitmq/
+.env
+credentials.json
+build.sh
