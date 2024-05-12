@@ -17,23 +17,24 @@ Para ello, será necesario desplegar con terraform un cluster de Kubernetes (GKE
 1. Clonar el archivo .env.example y renombrarlo a .env. Si desea, puede actualizar los valores por defecto.
 
 ```
-# Definir la cantidad de partes en las que se dividirá la imagen
-FRAGMENTS_COUNT=4
-
-# Puerto donde escucha el servidor redis
-REDIS_PORT=6379
-# Host donde se encuentra el servidor redis
-REDIS_HOST="localhost"
-
 # Endpoint para interactuar con el servicio de split de imágenes
 SPLIT_SERVICE_URL=http://split-service:5000/api/split
+
+# Definir la cantidad de partes en las que se dividirá la imagen
+FRAGMENTS_COUNT=4
 
 # Nombre del bucket GCP donde se subirán los fragmentos de imagen
 BUCKET_NAME=sobel
 
+# Host y puerto donde escucha el servidor redis
+REDIS_PORT=6379
+REDIS_HOST=redis
+
 # Nombre de usuario y password para usar de credenciales en rabbitmq
 RABBITMQ_USER=rabbituser
 RABBITMQ_PASSWORD=rabbitpassword
+# Host donde escucha el servidor rabbitmq
+RABBITMQ_HOST=rabbit
 ```
 
 2. Ejecutar el siguiente comando (debe modificar la linea de curl si desea utilizar otra imagen). Copie el TASK_ID obtenido como respuesta.

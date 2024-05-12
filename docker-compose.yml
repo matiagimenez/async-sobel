@@ -50,11 +50,11 @@ services:
             - '5000'
         environment:
             - FRAGMENTS_COUNT=${FRAGMENTS_COUNT}
-            - REDIS_HOST=redis
+            - REDIS_HOST=${REDIS_HOST}
             - REDIS_PORT=${REDIS_PORT}
             - BUCKET_NAME=${BUCKET_NAME}
             - CREDENTIALS_PATH=/credentials/credentials.json
-            - RABBITMQ_HOST=rabbit
+            - RABBITMQ_HOST=${RABBITMQ_HOST}
             - RABBITMQ_USER=${RABBITMQ_USER}
             - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
         networks:
@@ -71,7 +71,7 @@ services:
         environment:
             - BUCKET_NAME=${BUCKET_NAME}
             - CREDENTIALS_PATH=/credentials/credentials.json
-            - RABBITMQ_HOST=rabbit
+            - RABBITMQ_HOST=${RABBITMQ_HOST}
             - RABBITMQ_USER=${RABBITMQ_USER}
             - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
         networks:
@@ -88,7 +88,7 @@ services:
         environment:
             - BUCKET_NAME=${BUCKET_NAME}
             - CREDENTIALS_PATH=/credentials/credentials.json
-            - RABBITMQ_HOST=rabbit
+            - RABBITMQ_HOST=${RABBITMQ_HOST}
             - RABBITMQ_USER=${RABBITMQ_USER}
             - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
         networks:
@@ -105,7 +105,7 @@ services:
         environment:
             - BUCKET_NAME=${BUCKET_NAME}
             - CREDENTIALS_PATH=/credentials/credentials.json
-            - RABBITMQ_HOST=rabbit
+            - RABBITMQ_HOST=${RABBITMQ_HOST}
             - RABBITMQ_USER=${RABBITMQ_USER}
             - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
         networks:
@@ -121,11 +121,11 @@ services:
         ports:
             - '5000'
         environment:
-            - REDIS_HOST=redis
+            - REDIS_HOST=${REDIS_HOST}
             - REDIS_PORT=${REDIS_PORT}
             - BUCKET_NAME=${BUCKET_NAME}
             - CREDENTIALS_PATH=/credentials/credentials.json
-            - RABBITMQ_HOST=rabbit
+            - RABBITMQ_HOST=${RABBITMQ_HOST}
             - RABBITMQ_USER=${RABBITMQ_USER}
             - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
         networks:
@@ -141,11 +141,11 @@ services:
         ports:
             - '5000'
         environment:
-            - REDIS_HOST=redis
+            - REDIS_HOST=${REDIS_HOST}
             - REDIS_PORT=${REDIS_PORT}
             - BUCKET_NAME=${BUCKET_NAME}
             - CREDENTIALS_PATH=/credentials/credentials.json
-            - RABBITMQ_HOST=rabbit
+            - RABBITMQ_HOST=${RABBITMQ_HOST}
             - RABBITMQ_USER=${RABBITMQ_USER}
             - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
         networks:
