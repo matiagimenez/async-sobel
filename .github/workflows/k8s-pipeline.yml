@@ -87,9 +87,7 @@ jobs:
             - name: Google Cloud kubectl cluster metadata
               run: |
                   gcloud info
-
                   gcloud components list
-
                   gcloud container clusters get-credentials primary --region=us-east1-b
 
             # Despliega los objectos en la nube.
