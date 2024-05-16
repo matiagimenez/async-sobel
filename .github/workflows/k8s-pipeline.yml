@@ -45,18 +45,12 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v2
 
-            - name: Create credentials.json file
-              run: |
-                  echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > $GITHUB_WORKSPACE/credentials.json
-                  ls -lah
-
             # Setup de CLI de Terraform
             - name: Terraform setup
               uses: hashicorp/setup-terraform@v2
 
             # Crea el cluster en la nube.
             - name: Terraform init
-              working-directory: $GITHUB_WORKSPACE/k8s/terraform
               env:
                   GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
               # run: |
@@ -70,6 +64,8 @@ jobs:
 
               #     terraform apply -lock=false --auto-approve
               run: |
+                  echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > $GITHUB_WORKSPACE/credentials.json
+
                   ls -lah
 
                   terraform init
