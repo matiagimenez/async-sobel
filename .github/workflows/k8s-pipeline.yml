@@ -98,11 +98,11 @@ jobs:
               run: |
                   kubectl apply -f "https://github.com/rabbitmq/cluster-operator/releases/latest/download/cluster-operator.yml"
 
-                  sleep 70
+                  sleep 75
 
                   kubectl apply -f deployments/rabbitmq.yml
 
-                  sleep 120
+                  sleep 130
 
                   RABBITMQ_PASSWORD=$(kubectl get secret rabbitmq-default-user -o jsonpath="{.data.password}" | base64 --decode)
                   RABBITMQ_USER=$(kubectl get secret rabbitmq-default-user -o jsonpath="{.data.username}" | base64 --decode)
