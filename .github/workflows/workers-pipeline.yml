@@ -30,20 +30,6 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v2
 
-            # Setup de CLI de Packer
-            - name: Setup Packer
-              uses: hashicorp/setup-packer@main
-              id: setup
-              with:
-                  version: 'latest'
-
-            - name: Build Packer image
-              working-directory: terraform/packer
-              run: |
-                  packer build sobel.json > output.txt
-                  cat output.txt
-                  GOLDEN_IMAGE=$(grep -oP "(?<=A disk image was created in the 'braided-complex-416718' project: ).*" output.txt)
-                  echo "Image name: $GOLDEN_IMAGE"
             # # Setup de CLI de Terraform
             # - name: Terraform setup
             #   uses: hashicorp/setup-terraform@v2
