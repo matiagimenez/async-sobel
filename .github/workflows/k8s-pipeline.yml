@@ -56,7 +56,7 @@ jobs:
 
             # Crea el cluster en la nube.
             - name: Terraform init
-              working-directory: k8s/terraform
+              working-directory: $GITHUB_WORKSPACE/k8s/terraform
               env:
                   GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
               # run: |
