@@ -87,14 +87,6 @@ jobs:
 
                   gcloud container clusters get-credentials primary --region=us-east1-b
 
-            # Esperar hasta que el cluster Kubernetes esté listo.
-            - name: Wait for Kubernetes cluster to be ready
-              run: |
-                  echo "Waiting for Kubernetes cluster to be ready..."
-                  for i in {1..30}; do
-                    kubectl get nodes && break || sleep 30
-                  done
-
             # Despliega los objectos en la nube.
             - name: Kubernetes deploy
               working-directory: k8s
