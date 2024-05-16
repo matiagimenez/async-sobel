@@ -24,7 +24,7 @@ jobs:
                   push: true
                   tags: ${{ secrets.DOCKER_HUB_USERNAME }}/sobel-service:latest
     infra-up:
-        name: Build Kubernetes infrastructure
+        name: Build workers infrastructure
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
@@ -41,7 +41,7 @@ jobs:
               working-directory: terraform/packer
               run: |
                   echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > credentials.json
-                  IMAGE_NAME=$(packer build -machine-readable sobel.json | awk -F, '$0 ~/artifact,0,id/ {print $6}')
+                  IMAGE_NAME=$(packer build -machine-readable sobel.json | grep 'A disk image was created' | awk '{print $NF}')
                   echo "::set-output name=image-name::$IMAGE_NAME"
 
             # # Setup de CLI de Terraform

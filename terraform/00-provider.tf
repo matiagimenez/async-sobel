@@ -6,6 +6,11 @@ terraform {
     }
   }
 
+  backend "gcs" {
+    bucket  = "terraform_state_cloud"
+    prefix  = "workers/state"
+  }
+
   required_version = ">= 1.4.5"
 }
 

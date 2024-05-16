@@ -6,7 +6,7 @@
 	"builders": [
 		{
 			"type": "googlecompute",
-			"credentials_json": "{{user `gcloud_account_json`}}",
+			"account_file": "{{user `gcloud_account_json`}}",
 			"project_id": "{{user `gcloud_project_id`}}",
 			"ssh_username": "ubuntu",
 			"source_image_family": "ubuntu-2004-lts",
