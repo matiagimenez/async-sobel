@@ -51,22 +51,11 @@ jobs:
 
             # Crea el cluster en la nube.
             - name: Terraform init
+              working-directory: k8s/terraform
               env:
                   GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
-              # run: |
-              #     ls -lah
-
-              #     terraform init
-
-              #     terraform validate
-
-              #     terraform plan -lock=false
-
-              #     terraform apply -lock=false --auto-approve
               run: |
                   echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > $GITHUB_WORKSPACE/credentials.json
-
-                  cd k8s/terraform
 
                   ls -lah
 
@@ -75,6 +64,8 @@ jobs:
                   terraform validate
 
                   terraform plan -lock=false
+
+                  terraform apply -lock=false --auto-approve
 
             # Configuración CLI Google Cloud.
             - name: Google Cloud authentication
