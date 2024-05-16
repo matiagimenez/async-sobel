@@ -27,11 +27,10 @@ resource "google_compute_instance_template" "sobel-worker-template" {
   network_interface {
     network = var.network
     
-    # Esto es para darle una IP publica a los workers. Pero como son accedidos a través del balanceador, no haría falta.
     # Give a Public IP to instance(s)
-    # access_config {
+    access_config {
       // Ephemeral IP
-    # }
+    }
   }
 
   service_account {
