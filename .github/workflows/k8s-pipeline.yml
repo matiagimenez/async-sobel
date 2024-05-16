@@ -66,6 +66,8 @@ jobs:
               run: |
                   echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > $GITHUB_WORKSPACE/credentials.json
 
+                  cd k8s/terraform
+
                   ls -lah
 
                   terraform init
