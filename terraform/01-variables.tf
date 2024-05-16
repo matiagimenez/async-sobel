@@ -47,7 +47,7 @@ variable "desc_inst" {
 
 variable "machine_type" {
   type    = string
-  default = "n4-highcpu-4"
+  default = "n1-standard-2"
 }
 
 # This is the family tag used when building the Golden Image with Packer.
