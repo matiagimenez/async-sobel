@@ -41,7 +41,7 @@ jobs:
               working-directory: terraform/packer
               run: |
                   echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > credentials.json
-                  IMAGE_NAME=$(packer build -machine-readable sobel.json | grep 'A disk image was created' | awk '{print $NF}')
+                  IMAGE_NAME=$(packer build sobel.json | grep 'A disk image was created' | awk '{print $NF}')
                   echo "::set-output name=image-name::$IMAGE_NAME"
 
             # # Setup de CLI de Terraform
