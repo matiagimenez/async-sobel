@@ -25,34 +25,65 @@ jobs:
                   tags: ${{ secrets.DOCKER_HUB_USERNAME }}/sobel-service:latest
     infra-up:
         name: Build workers infrastructure
+        if: startsWith(github.event.head_commit.message, '(workers-up)')
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
               uses: actions/checkout@v2
 
-            # # Setup de CLI de Terraform
-            # - name: Terraform setup
-            #   uses: hashicorp/setup-terraform@v2
+            # Setup de CLI de Terraform
+            - name: Terraform setup
+              uses: hashicorp/setup-terraform@v2
 
-            # # Crea el cluster en la nube.
-            # - name: Terraform init
-            #   working-directory: terraform
-            #   env:
-            #       GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
-            #   run: |
-            #       echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > credentials.json
+            # Crea el cluster en la nube.
+            - name: Terraform init
+              working-directory: terraform
+              env:
+                  GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
+              run: |
+                  echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > credentials.json
 
-            #       ls -lah
+                  ls -lah
 
-            #       bucket_name="terraform_state_cloud"
-            #       prefix="workers/state"
+                  bucket_name="terraform_state_cloud"
+                  prefix="workers/state"
 
-            #       terraform init --reconfigure \
-            #         --backend-config "bucket=${bucket_name}" \
-            #         --backend-config "prefix=${prefix}"
+                  terraform init --reconfigure \
+                    --backend-config "bucket=${bucket_name}" \
+                    --backend-config "prefix=${prefix}"
 
-            #       terraform validate
+                  terraform validate
 
-            #       terraform plan -lock=false
+                  terraform plan -lock=false
 
-            #       terraform apply -lock=false --auto-approve
+              # terraform apply -lock=false --auto-approve
+    infra-destroy:
+        name: Destroy workers infrastructure
+        if: startsWith(github.event.head_commit.message, '(workers-down)')
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v2
+
+              # Setup de CLI de Terraform
+            - name: Terraform setup
+              uses: hashicorp/setup-terraform@v2
+
+              # Crea el cluster en la nube.
+            - name: Terraform init
+              working-directory: terraform
+              env:
+                  GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
+              run: |
+                  echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > credentials.json
+
+                  ls -lah
+
+                  BUCKET_NAME="terraform_state_cloud"
+                  PREFIX="workers/state"
+
+                  terraform init --reconfigure \
+                    --backend-config "bucket=${BUCKET_NAME}" \
+                    --backend-config "prefix=${PREFIX}"
+
+                  terraform destroy -lock=false --auto-approve
