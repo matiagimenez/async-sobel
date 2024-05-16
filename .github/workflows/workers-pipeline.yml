@@ -1,4 +1,4 @@
-name: Kubernetes pipeline
+name: Workers pipeline
 
 on:
     push:
@@ -40,10 +40,9 @@ jobs:
             - name: Build Packer image
               working-directory: terraform/packer
               run: |
-                  echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > credentials.json
-                  IMAGE_NAME=$(packer build sobel.json | grep 'A disk image was created' | awk '{print $NF}')
-                  echo "::set-output name=image-name::$IMAGE_NAME"
-
+                  packer build sobel.json > output.txt
+                  GOLDEN_IMAGE=$(grep -oP "(?<=A disk image was created in the 'braided-complex-416718' project: ).*" output.txt)
+                  echo "Image name: $GOLDEN_IMAGE"
             # # Setup de CLI de Terraform
             # - name: Terraform setup
             #   uses: hashicorp/setup-terraform@v2
