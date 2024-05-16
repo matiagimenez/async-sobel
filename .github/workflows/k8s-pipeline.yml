@@ -59,7 +59,12 @@ jobs:
 
                   ls -lah
 
-                  terraform init
+                  bucket_name="terraform_state_cloud"
+                  prefix="cluster/state"
+
+                  terraform init --reconfigure \
+                    --backend-config "bucket=${bucket_name}" \
+                    --backend-config "prefix=${prefix}"
 
                   terraform validate
 
