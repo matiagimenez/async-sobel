@@ -14,7 +14,7 @@ spec:
         spec:
             containers:
                 - name: split-service
-                  image: 'fedesin31/split-service:latest'
+                  image: 'mgimenezdev/split-service:latest'
                   ports:
                       - containerPort: 5000
                   env:

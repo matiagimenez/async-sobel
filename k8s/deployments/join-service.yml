@@ -14,7 +14,7 @@ spec:
         spec:
             containers:
                 - name: join-service
-                  image: 'fedesin31/join-service:latest'
+                  image: 'mgimenezdev/join-service:latest'
                   ports:
                       - containerPort: 5000
                   env:
