@@ -1,6 +1,6 @@
 variable "credentials" {
   type    = string
-  default = "../credentials.json"
+  default = "../../credentials.json"
 }
 
 variable "project" {
