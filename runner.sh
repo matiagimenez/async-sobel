@@ -1,8 +1,4 @@
 #!/bin/bash
-cd terraform
-sh create.sh
-cd ..
-docker compose up -d
 cd ../Images
 echo ""
 echo "Iniciando tarea sobel!"
