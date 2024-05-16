@@ -31,6 +31,24 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v2
 
+              # Configuración CLI Google Cloud.
+            - name: Google Cloud authentication
+              uses: google-github-actions/auth@v1
+              with:
+                  credentials_json: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
+
+            - name: Google Cloud kubectl plugin
+              uses: google-github-actions/setup-gcloud@v1
+              with:
+                  version: '>= 363.0.0'
+                  install_components: 'kubectl'
+
+            - name: Google Cloud kubectl cluster metadata
+              run: |
+                  gcloud info
+                  gcloud components list
+                  gcloud container clusters get-credentials primary --region=us-east1-b
+
             # Setup de CLI de Terraform
             - name: Terraform setup
               uses: hashicorp/setup-terraform@v2
@@ -41,22 +59,41 @@ jobs:
               env:
                   GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
               run: |
-                  echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > credentials.json
+                  RABBIT_SERVICE_IP=$(kubectl get svc rabbitmq -o=jsonpath='{.status.loadBalancer.ingress[0].ip}')
+                  RABBITMQ_PASSWORD=$(kubectl get secret rabbitmq-default-user -o jsonpath="{.data.password}" | base64 --decode)
+                  RABBITMQ_USER=$(kubectl get secret rabbitmq-default-user -o jsonpath="{.data.username}" | base64 --decode)
 
-                  ls -lah
+                  echo "Service IP: $RABBIT_SERVICE_IP"
+                  echo "Rabbit user: $RABBITMQ_PASSWORD"
+                  echo "Rabbit password: $RABBITMQ_USER"
 
-                  bucket_name="terraform_state_cloud"
-                  prefix="workers/state"
+                  echo -e 'sudo docker run -p 80:5000 \
+                    --name sobel \
+                    -v /credentials/credentials.json:/credentials/credentials.json \
+                    -e BUCKET_NAME="sobel" \
+                    -e RABBITMQ_HOST=${RABBITMQ_HOST} \
+                    -e RABBITMQ_USER=${RABBITMQ_USER} \
+                    -e RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD} \
+                    mgimenezdev/sobel-service:latest' > ./scripts/init.sh
 
-                  terraform init --reconfigure \
-                    --backend-config "bucket=${bucket_name}" \
-                    --backend-config "prefix=${prefix}"
+                  cat ./scripts/init.sh
 
-                  terraform validate
+            # echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > credentials.json
 
-                  terraform plan -lock=false
+            # ls -lah
 
-              # terraform apply -lock=false --auto-approve
+            # bucket_name="terraform_state_cloud"
+            # prefix="workers/state"
+
+            # terraform init --reconfigure \
+            #   --backend-config "bucket=${bucket_name}" \
+            #   --backend-config "prefix=${prefix}"
+
+            # terraform validate
+
+            # terraform plan -lock=false
+
+            # terraform apply -lock=false --auto-approve
     infra-destroy:
         name: Destroy workers infrastructure
         if: startsWith(github.event.head_commit.message, '(workers-down)')
