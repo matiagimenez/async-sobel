@@ -1,6 +1,6 @@
 {
 	"variables": {
-		"gcloud_account_json": "credentials.json",
+		"gcloud_account_json": "../../credentials.json",
 		"gcloud_project_id": "braided-complex-416718"
 	},
 	"builders": [
@@ -26,6 +26,11 @@
 				"sudo curl -fsSL https://get.docker.com/ -o get-docker.sh",
 				"sudo sh get-docker.sh"
 			]
+		},
+		{
+			"type": "file",
+			"source": "../../credentials.json",
+			"destination": "/tmp/credentials.json"
 		}
 	]
 }

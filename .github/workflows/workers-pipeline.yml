@@ -69,7 +69,7 @@ jobs:
 
                   echo -e 'sudo docker run -p 80:5000 \
                     --name sobel \
-                    -v /credentials/credentials.json:/credentials/credentials.json \
+                    -v /tmp/credentials.json:/credentials/credentials.json \
                     -e BUCKET_NAME="sobel" \
                     -e RABBITMQ_HOST=${RABBITMQ_HOST} \
                     -e RABBITMQ_USER=${RABBITMQ_USER} \
@@ -78,22 +78,22 @@ jobs:
 
                   cat ./scripts/init.sh
 
-            # echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > credentials.json
+                  echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > credentials.json
 
-            # ls -lah
+                  ls -lah
 
-            # bucket_name="terraform_state_cloud"
-            # prefix="workers/state"
+                  bucket_name="terraform_state_cloud"
+                  prefix="workers/state"
 
-            # terraform init --reconfigure \
-            #   --backend-config "bucket=${bucket_name}" \
-            #   --backend-config "prefix=${prefix}"
+                  terraform init --reconfigure \
+                    --backend-config "bucket=${bucket_name}" \
+                    --backend-config "prefix=${prefix}"
 
-            # terraform validate
+                  terraform validate
 
-            # terraform plan -lock=false
+                  terraform plan -lock=false
 
-            # terraform apply -lock=false --auto-approve
+                  terraform apply -lock=false --auto-approve
     infra-destroy:
         name: Destroy workers infrastructure
         if: startsWith(github.event.head_commit.message, '(workers-down)')
