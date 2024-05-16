@@ -1,6 +1,6 @@
 {
 	"variables": {
-		"gcloud_account_json": "../../../credentials.json",
+		"gcloud_account_json": "credentials.json",
 		"gcloud_project_id": "braided-complex-416718"
 	},
 	"builders": [

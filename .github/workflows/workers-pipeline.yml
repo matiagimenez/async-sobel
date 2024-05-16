@@ -1,0 +1,72 @@
+name: Kubernetes pipeline
+
+on:
+    push:
+        branches: ['main']
+jobs:
+    build-image:
+        name: Build and Push Docker Image
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v2
+
+            - name: Login to Docker Hub
+              uses: docker/login-action@v2
+              with:
+                  username: ${{ secrets.DOCKER_HUB_USERNAME }}
+                  password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+            - name: Build and push Docker image
+              uses: docker/build-push-action@v2
+              with:
+                  context: ./sobel-service
+                  push: true
+                  tags: ${{ secrets.DOCKER_HUB_USERNAME }}/sobel-service:latest
+    infra-up:
+        name: Build Kubernetes infrastructure
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v2
+
+            # Setup de CLI de Packer
+            - name: Setup Packer
+              uses: hashicorp/setup-packer@main
+              id: setup
+              with:
+                  version: 'latest'
+
+            - name: Build Packer image
+              working-directory: terraform/packer
+              run: |
+                  echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > credentials.json
+                  IMAGE_NAME=$(packer build -machine-readable sobel.json | awk -F, '$0 ~/artifact,0,id/ {print $6}')
+                  echo "::set-output name=image-name::$IMAGE_NAME"
+
+            # # Setup de CLI de Terraform
+            # - name: Terraform setup
+            #   uses: hashicorp/setup-terraform@v2
+
+            # # Crea el cluster en la nube.
+            # - name: Terraform init
+            #   working-directory: terraform
+            #   env:
+            #       GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
+            #   run: |
+            #       echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > credentials.json
+
+            #       ls -lah
+
+            #       bucket_name="terraform_state_cloud"
+            #       prefix="workers/state"
+
+            #       terraform init --reconfigure \
+            #         --backend-config "bucket=${bucket_name}" \
+            #         --backend-config "prefix=${prefix}"
+
+            #       terraform validate
+
+            #       terraform plan -lock=false
+
+            #       terraform apply -lock=false --auto-approve
