@@ -74,6 +74,7 @@ jobs:
                     -e RABBITMQ_HOST=${RABBITMQ_HOST} \
                     -e RABBITMQ_USER=${RABBITMQ_USER} \
                     -e RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD} \
+                    -e CREDENTIALS_PATH=/credentials/credentials.json \
                     mgimenezdev/sobel-service:latest' > ./scripts/init.sh
 
                   cat ./scripts/init.sh
