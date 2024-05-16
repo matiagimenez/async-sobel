@@ -6,7 +6,7 @@
 
 ## Creación de infraestructura para workers
 
--   Ejecutar terraform para crear la instancia de la VM en GCP.
+-   Ejecutar terraform para crear la instancia de la VM en GCP
 
 ```bash
 BUCKET_NAME="terraform_state_cloud"
