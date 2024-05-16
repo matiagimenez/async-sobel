@@ -3,7 +3,6 @@ name: Kubernetes pipeline
 on:
     push:
         branches: ['main']
-        # paths: ['TP4/ej3/**']
 jobs:
     build-images:
         name: Build and Push Docker Image
@@ -40,7 +39,7 @@ jobs:
                   tags: ${{ secrets.DOCKER_HUB_USERNAME }}/join-service:latest
     infra-up:
         name: Build Kubernetes infrastructure
-        if: startsWith(github.event.head_commit.message, '(UP)')
+        if: startsWith(github.event.head_commit.message, '(up)')
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
@@ -140,7 +139,7 @@ jobs:
                   kubectl apply -f services/join-service.yml
     infra-destroy:
         name: Build Kubernetes infrastructure
-        if: startsWith(github.event.head_commit.message, '(DOWN)')
+        if: startsWith(github.event.head_commit.message, '(down)')
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
