@@ -40,6 +40,7 @@ jobs:
                   tags: ${{ secrets.DOCKER_HUB_USERNAME }}/join-service:latest
     infra-up:
         name: Build Kubernetes infrastructure
+        if: startsWith(github.event.head_commit.message, '(UP)')
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
@@ -137,3 +138,33 @@ jobs:
                   kubectl apply -f services/redis.yml
                   kubectl apply -f services/split-service.yml
                   kubectl apply -f services/join-service.yml
+    infra-destroy:
+        name: Build Kubernetes infrastructure
+        if: startsWith(github.event.head_commit.message, '(DOWN)')
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v2
+
+              # Setup de CLI de Terraform
+            - name: Terraform setup
+              uses: hashicorp/setup-terraform@v2
+
+              # Crea el cluster en la nube.
+            - name: Terraform init
+              working-directory: k8s/terraform
+              env:
+                  GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
+              run: |
+                  echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > credentials.json
+
+                  ls -lah
+
+                  BUCKET_NAME="terraform_state_cloud"
+                  PREFIX="cluster/state"
+
+                  terraform init --reconfigure \
+                    --backend-config "bucket=${BUCKET_NAME}" \
+                    --backend-config "prefix=${PREFIX}"
+
+                  terraform destroy -lock=false --auto-approve
