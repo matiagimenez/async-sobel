@@ -8,7 +8,7 @@ Para ello, será necesario desplegar con terraform un cluster de Kubernetes (GKE
 
 -   Un nodegroup para alojar los servicios de infraestructura (rabbitmq, redis, otros)
 -   Un nodegroup compartido para las aplicaciones del sistema (front, back, split, joiner)
--   Máquinas virtuales (fuera del cluster) que se encarguen de las tareas de procesamiento / cómputo intensivo.
+-   Máquinas virtuales (fuera del cluster) que se encarguen de las tareas de procesamiento / cómputo intensivo
 
 ![Diagramas-# HIT 3 (TP 4)](https://github.com/Fedesin/sdypp-2024/assets/117539520/660a280b-d904-4bf5-b8dc-57966502dfa0)
 
