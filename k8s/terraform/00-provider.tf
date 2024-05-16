@@ -6,6 +6,11 @@ terraform {
     }
   }
 
+  backend "gcs" {
+    bucket  = "terraform_state_cloud"
+    prefix  = "cluster/state"
+  }
+
   required_version = ">= 1.4.5"
 }
 
@@ -15,3 +20,4 @@ provider "google" {
   region      = var.region
   zone        = var.zone
 }
+
