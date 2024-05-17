@@ -64,7 +64,7 @@ jobs:
               env:
                   GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
               run: |
-                  RABBIT_SERVICE_IP=$(kubectl get svc rabbitmq -o=jsonpath='{.status.loadBalancer.ingress[0].ip}')
+                  RABBITMQ_SERVICE_IP=$(kubectl get svc rabbitmq -o=jsonpath='{.status.loadBalancer.ingress[0].ip}')
                   RABBITMQ_PASSWORD=$(kubectl get secret rabbitmq-default-user -o jsonpath="{.data.password}" | base64 --decode)
                   RABBITMQ_USER=$(kubectl get secret rabbitmq-default-user -o jsonpath="{.data.username}" | base64 --decode)
 
@@ -72,18 +72,18 @@ jobs:
                   echo "Rabbit user: $RABBITMQ_PASSWORD"
                   echo "Rabbit password: $RABBITMQ_USER"
 
-                  echo -e 'sudo docker run -p 80:5000 \
+                  cat <<EOL > ./scripts/init.sh
+                  sudo docker run -p 80:5000 \
                     --name sobel \
                     -e BUCKET_NAME="sobel" \
-                    -e RABBITMQ_HOST=${RABBITMQ_HOST} \
+                    -e RABBITMQ_HOST=${RABBITMQ_SERVICE_IP} \
                     -e RABBITMQ_USER=${RABBITMQ_USER} \
                     -e RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD} \
                     -e CREDENTIALS_PATH=/credentials/credentials.json \
-                    mgimenezdev/sobel-service:latest' > ./scripts/init.sh
+                    mgimenezdev/sobel-service:latest
+                  EOL
 
                   echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > credentials.json
-
-                  ls -lah
 
                   bucket_name="terraform_state_cloud"
                   prefix="workers/state"
