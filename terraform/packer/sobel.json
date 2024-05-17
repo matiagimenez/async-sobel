@@ -11,7 +11,7 @@
 			"ssh_username": "ubuntu",
 			"source_image_family": "ubuntu-2004-lts",
 			"image_name": "async-sobel-docker-{{timestamp}}",
-			"zone": "us-central1-f",
+			"zone": "us-west1-b",
 			"machine_type": "n1-standard-2",
 			"disk_size": "20",
 			"on_host_maintenance": "TERMINATE"
@@ -26,11 +26,6 @@
 				"sudo curl -fsSL https://get.docker.com/ -o get-docker.sh",
 				"sudo sh get-docker.sh"
 			]
-		},
-		{
-			"type": "file",
-			"source": "../../credentials.json",
-			"destination": "/tmp/credentials.json"
 		}
 	]
 }
