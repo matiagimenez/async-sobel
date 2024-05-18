@@ -14,7 +14,7 @@ Para ello, será necesario desplegar con terraform un cluster de Kubernetes (GKE
 
 # Instrucciones para ejecutar el servicio de manera local con docker
 
-1. Clonar el archivo .env.example y renombrarlo a .env. Si desea, puede actualizar los valores por defecto
+1. Clonar el archivo .env.example y renombrarlo a .env. Si desea, puede actualizar los valores por defecto.
 
 ```
 # Endpoint para interactuar con el servicio de split de imágenes
