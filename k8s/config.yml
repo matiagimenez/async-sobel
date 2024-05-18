@@ -7,14 +7,21 @@ data:
     FRAGMENTS_COUNT: '4'
     BUCKET_NAME: sobel
     REDIS_PORT: '6379'
-    REDIS_HOST: redis
+    REDIS_HOST: redis-master
 ---
-# apiVersion: v1
-# kind: Secret
-# metadata:
-#     name: postgres-secrets
-# type: Opaque
-# data:
-#     # Base64 encode
-#     RABBITMQ_USER: cmFiYml0dXNlcg== # rabbituser
-#     RABBITMQ_PASSWORD: cmFiYml0cGFzc3dvcmQ= # rabbitpassword
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: redis-master
+data:
+    redis.conf: |
+        appendonly no
+        protected-mode no
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: redis-replica
+data:
+    redis.conf: |+
+        replicaof redis-master 6379
