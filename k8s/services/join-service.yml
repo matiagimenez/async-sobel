@@ -3,7 +3,8 @@ kind: Service
 metadata:
     name: join-service
 spec:
-    type: LoadBalancer
+    # type: LoadBalancer
+    type: ClusterIP
     selector:
         app: join-service
     ports:
