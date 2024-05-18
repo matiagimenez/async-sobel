@@ -12,7 +12,7 @@ resource "google_compute_firewall" "allow_http" {
 
 # Crea una red 
 resource "google_compute_network" "workers_net" {
-  name                            = "workers_net"
+  name                            = "workers-net"
   routing_mode                    = "REGIONAL"
   auto_create_subnetworks         = false
   mtu                             = 1460
@@ -31,15 +31,15 @@ resource "google_compute_subnetwork" "workers_subnet" {
 }
 
 resource "google_compute_router" "workers_router" {
-  name    = "workers_router"
+  name    = "workers-router"
   region  = var.region
   network = google_compute_network.workers_net.id
 }
 
 # Crea un recurso NAT que traducirá las direcciones IP de origen de la subred privada de kubernetes. 
 resource "google_compute_router_nat" "router_nat" {
-  name   = "router_nat"
-  router = google_compute_router.workers_net.name
+  name   = "router-nat"
+  router = google_compute_router.workers_router.name
   region = var.region
 
   source_subnetwork_ip_ranges_to_nat = "LIST_OF_SUBNETWORKS"
@@ -50,13 +50,13 @@ resource "google_compute_router_nat" "router_nat" {
     source_ip_ranges_to_nat = ["ALL_IP_RANGES"]
   }
 
-  nat_ips = [google_compute_address.router_nat.self_link]
+  nat_ips = [google_compute_address.nat_address.self_link]
 }
 
 # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_address
 # Crea una IP pública para ser utilizada en el NAT
 resource "google_compute_address" "nat_address" {
-  name         = "nat_address"
+  name         = "nat-address"
   address_type = "EXTERNAL"
   network_tier = "PREMIUM"
 
