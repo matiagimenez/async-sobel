@@ -27,10 +27,10 @@ resource "google_compute_instance_template" "sobel-worker-template" {
   network_interface {
     network = var.network
     
-    # # Give a Public IP to instance(s)
-    # access_config {
-    #  // Ephemeral IP
-    # }
+    # Give a Public IP to instance(s)
+    access_config {
+     // Ephemeral IP
+    }
   }
 
   service_account {
