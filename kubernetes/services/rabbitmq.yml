@@ -7,3 +7,19 @@ spec:
     image: rabbitmq:3.13-management
     service:
         type: LoadBalancer
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Policy
+metadata:
+    name: ha-policy
+    namespace: default
+spec:
+    name: mirroring-sobel-queues
+    vhost: '/'
+    pattern: '.*sobel.*' # regex usado para hacer coincidir colas y exchanges
+    applyTo: 'queues' # aplicar solo a colas
+    definition:
+        ha-mode: all
+        ha-sync-mode: automatic
+    rabbitmqClusterReference:
+        name: rabbitmq
