@@ -201,6 +201,10 @@ jobs:
                     RABBITMQ_HOST: rabbitmq
                   EOF
 
+            - name: Set high availability policy for RabbitMQ cluster
+              run: |
+                  kubectl exec -it rabbitmq-server-0 -n rabbitmq-namespace -- rabbitmqctl set_policy ha-policy ".*sobel.*" \ '{"ha-mode":"exactly","ha-params":2,"ha-sync-mode":"automatic"}'
+
             # Crear un nuevo ConfigMap con las credenciales de GCP
             - name: Create GCP config
               working-directory: kubernetes
