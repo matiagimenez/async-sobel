@@ -2,7 +2,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
     name: redis-data
-    namespace: redis-namespace
+    namespace: argocd
 spec:
     accessModes:
         - ReadWriteOnce

@@ -1,25 +1,26 @@
+# https://github.com/pinky-bhargava/redis-master-replica/tree/main
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-    name: redis-master
-    namespace: redis-namespace
+    name: redis-replica
+    namespace: argocd
 spec:
-    replicas: 1
+    replicas: 3
     selector:
         matchLabels:
-            app: redis-master
+            app: redis-replica
     template:
         metadata:
             labels:
-                app: redis-master
+                app: redis-replica
         spec:
             containers:
                 - name: redis
                   image: redis:alpine
                   ports:
-                      - containerPort: 6379
+                      - containerPort: 7000
                         name: client
-                      - containerPort: 16379
+                      - containerPort: 17000
                         name: gossip
                   command: ['redis-server', '/conf/redis.conf']
                   env:
@@ -34,7 +35,7 @@ spec:
             volumes:
                 - name: conf
                   configMap:
-                      name: redis-master
+                      name: redis-replica
                       defaultMode: 0755
                 - name: redis-volume
                   persistentVolumeClaim:

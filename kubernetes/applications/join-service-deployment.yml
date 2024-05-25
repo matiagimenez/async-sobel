@@ -1,29 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-    name: split-service
-    namespace: applications-namespace
+    name: join-service
+    namespace: argocd
 spec:
     replicas: 4
     selector:
         matchLabels:
-            app: split-service
+            app: join-service
     template:
         metadata:
             labels:
-                app: split-service
+                app: join-service
         spec:
             containers:
-                - name: split-service
-                  image: 'mgimenezdev/split-service:latest'
+                - name: join-service
+                  image: 'mgimenezdev/join-service:latest'
                   ports:
                       - containerPort: 5000
                   env:
-                      - name: FRAGMENTS_COUNT
-                        valueFrom:
-                            configMapKeyRef:
-                                name: application-config
-                                key: FRAGMENTS_COUNT
                       - name: BUCKET_NAME
                         valueFrom:
                             configMapKeyRef:

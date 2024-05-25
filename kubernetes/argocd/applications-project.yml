@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+    name: applications
+    namespace: argocd
+spec:
+    description: 'Root application project for managing application components'
+    sourceRepos:
+        - '*'
+    destinations:
+        - server: 'https://kubernetes.default.svc'
+          namespace: '*'
+        - server: '*'
+          namespace: '*'
+    clusterResourceWhitelist:
+        - group: '*'
+          kind: '*'

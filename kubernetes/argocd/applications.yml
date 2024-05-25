@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+    name: apps-application
+    namespace: argocd
+    finalizers:
+        - resources-finalizer.argocd.argoproj.io
+spec:
+    destination:
+        name: in-cluster
+        namespace: argocd
+    source:
+        path: kubernetes/applications
+        repoURL: 'https://github.com/matiasgimenezdev/async-sobel.git'
+        targetRevision: HEAD
+    project: applications
+    syncPolicy:
+        automated:
+            prune: true
+            selfHeal: true
