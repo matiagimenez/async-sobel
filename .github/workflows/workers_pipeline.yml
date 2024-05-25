@@ -125,7 +125,7 @@ jobs:
 
               # Crea el cluster en la nube.
             - name: Terraform init
-              working-directory: TÑterraform
+              working-directory: terraform
               env:
                   GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
               run: |
