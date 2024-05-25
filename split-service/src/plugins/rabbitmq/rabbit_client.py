@@ -1,5 +1,6 @@
 import pika
 import os
+import time
 
 
 def rabbit_connect():
@@ -7,19 +8,35 @@ def rabbit_connect():
     rabbit_password = os.environ.get("RABBITMQ_PASSWORD")
     rabbit_host = os.environ.get("RABBITMQ_HOST")
 
-    connection = pika.BlockingConnection(
-        pika.ConnectionParameters(
-            host=rabbit_host,
-            credentials=pika.PlainCredentials(rabbit_user, rabbit_password)
-        )
-    )
-    channel = connection.channel()
+    def connect():
+        try:
+            connection = pika.BlockingConnection(
+                pika.ConnectionParameters(
+                    host=rabbit_host,
+                    credentials=pika.PlainCredentials(
+                        rabbit_user, rabbit_password),
+                    heartbeat=60
+                )
+            )
+            channel = connection.channel()
 
-    channel.exchange_declare(
-        exchange='sobel', exchange_type='direct', durable=True, auto_delete=False)
+            channel.exchange_declare(
+                exchange='sobel', exchange_type='direct', durable=True, auto_delete=False)
 
-    channel.queue_declare(queue='pre-sobel', durable=True)
+            channel.queue_declare(queue='pre-sobel', durable=True)
 
-    channel.queue_bind(exchange='sobel', queue='pre-sobel', routing_key='pre')
+            channel.queue_bind(
+                exchange='sobel', queue='pre-sobel', routing_key='pre')
+
+            return channel
+        except pika.exceptions.AMQPConnectionError:
+            return None
+
+    while True:
+        channel = connect()
+        if channel:
+            break
+        print("Failed to connect to RabbitMQ. Retrying in 5 seconds...")
+        time.sleep(5)
 
     return channel
