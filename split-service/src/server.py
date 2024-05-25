@@ -16,22 +16,17 @@ from plugins.bucket.storage_client import upload_image
 
 app = Flask(__name__)
 
+
 # Variables globales para mantener las conexiones
-redis_connection = None
-rabbitmq_channel = None
+redis_connection = redis_connect()
+rabbitmq_channel = rabbit_connect()
 
 
 def get_redis_connection():
-    global redis_connection
-    if redis_connection is None:
-        redis_connection = redis_connect()
     return redis_connection
 
 
 def get_rabbitmq_channel():
-    global rabbitmq_channel
-    if rabbitmq_channel is None:
-        rabbitmq_channel = rabbit_connect()
     return rabbitmq_channel
 
 
@@ -116,7 +111,7 @@ def split(task_id):
 
             return jsonify({'OK': 'Imagen fragmentada correctamente'}), 200
         except internal_server_error:
-            return jsonify({'Internal server error': 'Ocurrió un error al dividir la imagen. Reintente en unos momentos.'}), 500
+            return jsonify({'Internal server error': 'Ocurrio un error al dividir la imagen. Reintente en unos momentos.'}), 500
 
     else:
         # Método no permitido o imagen no adjunta
