@@ -1,0 +1,191 @@
+name: Kubernetes pipeline
+
+on:
+    push:
+        branches: ['main']
+        paths: ['TP4/ej3/**']
+jobs:
+    build-images:
+        name: Build and Push Docker Image
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Login to Docker Hub
+              uses: docker/login-action@v3
+              with:
+                  username: ${{ secrets.DOCKER_HUB_USERNAME }}
+                  password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+            - name: Build and push split service image
+              uses: docker/build-push-action@v5
+              with:
+                  context: ./TP4/ej3/split-service
+                  push: true
+                  tags: ${{ secrets.DOCKER_HUB_USERNAME }}/split-service:latest
+
+            - name: Build and push entry server image
+              uses: docker/build-push-action@v5
+              with:
+                  context: ./TP4/ej3/entry-server
+                  push: true
+                  tags: ${{ secrets.DOCKER_HUB_USERNAME }}/entry-server:latest
+
+            - name: Build and push join service image
+              uses: docker/build-push-action@v5
+              with:
+                  context: ./TP4/ej3/join-service
+                  push: true
+                  tags: ${{ secrets.DOCKER_HUB_USERNAME }}/join-service:latest
+    infra-up:
+        name: Build Kubernetes infrastructure
+        if: startsWith(github.event.head_commit.message, '(up)')
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            # Setup de CLI de Terraform
+            - name: Terraform setup
+              uses: hashicorp/setup-terraform@v3
+
+            # Crea el cluster en la nube.
+            - name: Terraform init
+              working-directory: TP4/ej3/kubernetes/terraform
+              env:
+                  GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
+              run: |
+                  echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > credentials.json
+
+                  ls -lah
+
+                  BUCKET_NAME="terraform_state_cloud"
+                  PREFIX="cluster/state"
+
+                  terraform init --reconfigure \
+                    --backend-config "bucket=${BUCKET_NAME}" \
+                    --backend-config "prefix=${PREFIX}"
+
+                  terraform validate
+
+                  terraform plan -lock=false
+
+                  terraform apply -lock=false --auto-approve
+
+            # Configuración CLI Google Cloud.
+            - name: Google Cloud authentication
+              uses: google-github-actions/auth@v2
+              with:
+                  credentials_json: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
+
+            - name: Google Cloud kubectl plugin
+              uses: google-github-actions/setup-gcloud@v2
+              with:
+                  version: '>= 363.0.0'
+                  install_components: 'kubectl'
+
+            - name: Google Cloud kubectl cluster metadata
+              run: |
+                  REGION="us-central1-a"
+                  gcloud info
+                  gcloud components list
+                  gcloud container clusters get-credentials primary --region=${REGION}
+
+            - name: Create Kubernetes namespaces
+              working-directory: TP4/ej3/kubernetes
+              run: |
+                  kubectl apply -f namespaces.yml
+
+            # Despliega los objectos en la nube.
+            - name: RabbitMQ deploy
+              working-directory: TP4/ej3/kubernetes
+              run: |
+                  kubectl apply -f "https://github.com/rabbitmq/cluster-operator/releases/latest/download/cluster-operator.yml"
+
+                  sleep 60
+
+                  kubectl apply -f deployments/rabbitmq.yml
+
+                  sleep 120
+
+            - name: Create RabbitMQ config
+              working-directory: TP4/ej3/kubernetes
+              run: |
+                  RABBITMQ_PASSWORD=$(kubectl get secret rabbitmq-default-user -o jsonpath="{.data.password}" -n rabbitmq-namespace | base64 --decode)
+                  RABBITMQ_USER=$(kubectl get secret rabbitmq-default-user -o jsonpath="{.data.username}" -n rabbitmq-namespace | base64 --decode)
+
+                  # Crear un nuevo ConfigMap con las credenciales de RabbitMQ
+                  cat <<EOF | kubectl apply -f -
+                  apiVersion: v1
+                  kind: ConfigMap
+                  metadata:
+                    name: rabbit-config
+                    namespace: applications-namespace
+                  data:
+                    RABBITMQ_USER: $RABBITMQ_USER
+                    RABBITMQ_PASSWORD: $RABBITMQ_PASSWORD
+                    RABBITMQ_HOST: rabbitmq.rabbitmq-namespace.svc.cluster.local
+                  EOF
+
+            - name: Create GCP config
+              working-directory: TP4/ej3/kubernetes
+              run: |
+                  echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > credentials.json
+
+                  # Crear un nuevo ConfigMap con las credenciales de GCP
+                  kubectl create configmap -n applications-namespace credentials-config --from-file=credentials.json
+
+            - name: Create applications config
+              working-directory: TP4/ej3/kubernetes
+              run: |
+                  kubectl apply -f config.yml
+
+            - name: Deploy Redis
+              working-directory: TP4/ej3/kubernetes
+              run: |
+                  kubectl apply -f volumes/redis-data.yml
+                  kubectl apply -f deployments/redis-master.yml
+                  kubectl apply -f deployments/redis-replica.yml
+                  kubectl apply -f services/redis-master.yml
+                  kubectl apply -f services/redis-replica.yml
+
+            - name: Deploy applications
+              working-directory: TP4/ej3/kubernetes
+              run: |
+                  kubectl apply -f deployments/entry-server.yml
+                  kubectl apply -f deployments/split-service.yml
+                  kubectl apply -f deployments/join-service.yml
+                  kubectl apply -f services/entry-server.yml
+                  kubectl apply -f services/split-service.yml
+                  kubectl apply -f services/join-service.yml
+    infra-destroy:
+        name: Destroy Kubernetes infrastructure
+        if: startsWith(github.event.head_commit.message, '(down)')
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+              # Setup de CLI de Terraform
+            - name: Terraform setup
+              uses: hashicorp/setup-terraform@v3
+
+              # Crea el cluster en la nube.
+            - name: Terraform init
+              working-directory: TP4/ej3/kubernetes/terraform
+              env:
+                  GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
+              run: |
+                  echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > credentials.json
+
+                  ls -lah
+
+                  BUCKET_NAME="terraform_state_cloud"
+                  PREFIX="cluster/state"
+
+                  terraform init --reconfigure \
+                    --backend-config "bucket=${BUCKET_NAME}" \
+                    --backend-config "prefix=${PREFIX}"
+
+                  terraform destroy -lock=false --auto-approve

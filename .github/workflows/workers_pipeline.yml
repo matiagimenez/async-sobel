@@ -1,0 +1,144 @@
+name: Workers pipeline
+
+on:
+    push:
+        branches: ['main']
+        paths: ['TP4/ej3/**']
+jobs:
+    build-image:
+        name: Build and Push Docker Image
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Copy credentials.json
+              run: |
+                  echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > TP4/ej3/sobel-service/credentials.json
+
+            - name: Login to Docker Hub
+              uses: docker/login-action@v3
+              with:
+                  username: ${{ secrets.DOCKER_HUB_USERNAME }}
+                  password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+            - name: Build and push sobel service Docker image
+              uses: docker/build-push-action@v5
+              with:
+                  context: ./TP4/ej3/sobel-service
+                  push: true
+                  tags: ${{ secrets.DOCKER_HUB_USERNAME }}/sobel-service:latest
+    infra-up:
+        name: Build workers infrastructure
+        if: startsWith(github.event.head_commit.message, '(up)')
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+              # Configuración CLI Google Cloud.
+            - name: Google Cloud authentication
+              uses: google-github-actions/auth@v2
+              with:
+                  credentials_json: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
+
+            - name: Google Cloud kubectl plugin
+              uses: google-github-actions/setup-gcloud@v2
+              with:
+                  version: '>= 363.0.0'
+                  install_components: 'kubectl'
+
+            - name: Wait for Kubernetes cluster to be ready
+              run: |
+                  REGION="us-central1-a"
+                  until [ "$(gcloud container clusters describe primary --region=${REGION} --format='value(status)')" = "RUNNING" ]; do
+                    echo "Waiting for Kubernetes cluster to be ready..."
+                    sleep 10
+                  done
+
+            - name: Google Cloud kubectl cluster metadata
+              run: |
+                  REGION="us-central1-a"
+                  gcloud info
+                  gcloud components list
+                  gcloud container clusters get-credentials primary --region=${REGION}
+
+            - name: Wait for RabbitMQ service to be ready
+              run: |
+                  while [[ $(kubectl get svc rabbitmq -n rabbitmq-namespace -o=jsonpath='{.status.loadBalancer.ingress[0].ip}') == "" ]]; do
+                    echo "Waiting for RabbitMQ service to be ready..."
+                    sleep 10
+                  done
+
+            - name: Create init.sh script for workers
+              working-directory: TP4/ej3/terraform
+              run: |
+                  RABBITMQ_SERVICE_IP=$(kubectl get svc rabbitmq -n rabbitmq-namespace -o=jsonpath='{.status.loadBalancer.ingress[0].ip}')
+                  RABBITMQ_PASSWORD=$(kubectl get secret rabbitmq-default-user -o jsonpath="{.data.password}" -n rabbitmq-namespace | base64 --decode)
+                  RABBITMQ_USER=$(kubectl get secret rabbitmq-default-user -o jsonpath="{.data.username}" -n rabbitmq-namespace | base64 --decode)
+
+                  cat <<EOL > ./scripts/init.sh
+                  sudo docker run -p 80:5000 \
+                    --name sobel \
+                    -e BUCKET_NAME="sobel" \
+                    -e RABBITMQ_HOST=${RABBITMQ_SERVICE_IP} \
+                    -e RABBITMQ_USER=${RABBITMQ_USER} \
+                    -e RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD} \
+                    -e CREDENTIALS_PATH=/credentials/credentials.json \
+                    mgimenezdev/sobel-service:latest
+                  EOL
+
+            # Setup de CLI de Terraform
+            - name: Terraform setup
+              uses: hashicorp/setup-terraform@v3
+
+            # Crea el cluster en la nube.
+            - name: Terraform init
+              working-directory: TP4/ej3/terraform
+              env:
+                  GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
+              run: |
+                  echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > credentials.json
+
+                  bucket_name="terraform_state_cloud"
+                  prefix="workers/state"
+
+                  terraform init --reconfigure \
+                    --backend-config "bucket=${bucket_name}" \
+                    --backend-config "prefix=${prefix}"
+
+                  terraform validate
+
+                  terraform plan -lock=false
+
+                  terraform apply -lock=false --auto-approve
+    infra-destroy:
+        name: Destroy workers infrastructure
+        if: startsWith(github.event.head_commit.message, '(down)')
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+              # Setup de CLI de Terraform
+            - name: Terraform setup
+              uses: hashicorp/setup-terraform@v3
+
+              # Crea el cluster en la nube.
+            - name: Terraform init
+              working-directory: TP4/ej3/terraform
+              env:
+                  GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
+              run: |
+                  echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > credentials.json
+
+                  ls -lah
+
+                  BUCKET_NAME="terraform_state_cloud"
+                  PREFIX="workers/state"
+
+                  terraform init --reconfigure \
+                    --backend-config "bucket=${BUCKET_NAME}" \
+                    --backend-config "prefix=${PREFIX}"
+
+                  terraform destroy -lock=false --auto-approve
