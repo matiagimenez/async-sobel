@@ -19,7 +19,7 @@ variable "zone" {
 }
 
 variable "bucket_name" {
-  type = string
+  type    = string
   default = "sobel"
 }
 

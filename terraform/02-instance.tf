@@ -19,14 +19,14 @@ resource "google_compute_instance_template" "sobel-worker-template" {
 
   // Como imagen base usamos la creada con Packer (sobel.json)
   disk {
-    source_image = var.source_image 
+    source_image = var.source_image
     auto_delete  = true
     boot         = true
   }
 
   network_interface {
     network = var.network
-    
+
     # Give a Public IP to instance(s)
     access_config {
       // Ephemeral IP

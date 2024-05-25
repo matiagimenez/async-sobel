@@ -3,7 +3,6 @@ name: Kubernetes pipeline
 on:
     push:
         branches: ['main']
-        paths: ['TP4/ej3/**']
 jobs:
     build-images:
         name: Build and Push Docker Image
@@ -16,26 +15,26 @@ jobs:
               uses: docker/login-action@v3
               with:
                   username: ${{ secrets.DOCKER_HUB_USERNAME }}
-                  password: ${{ secrets.DOCKER_HUB_TOKEN }}
+                  password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
             - name: Build and push split service image
               uses: docker/build-push-action@v5
               with:
-                  context: ./TP4/ej3/split-service
+                  context: ./split-service
                   push: true
                   tags: ${{ secrets.DOCKER_HUB_USERNAME }}/split-service:latest
 
             - name: Build and push entry server image
               uses: docker/build-push-action@v5
               with:
-                  context: ./TP4/ej3/entry-server
+                  context: ./entry-server
                   push: true
                   tags: ${{ secrets.DOCKER_HUB_USERNAME }}/entry-server:latest
 
             - name: Build and push join service image
               uses: docker/build-push-action@v5
               with:
-                  context: ./TP4/ej3/join-service
+                  context: ./join-service
                   push: true
                   tags: ${{ secrets.DOCKER_HUB_USERNAME }}/join-service:latest
     infra-up:
@@ -52,7 +51,7 @@ jobs:
 
             # Crea el cluster en la nube.
             - name: Terraform init
-              working-directory: TP4/ej3/kubernetes/terraform
+              working-directory: kubernetes/terraform
               env:
                   GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
               run: |
@@ -93,13 +92,13 @@ jobs:
                   gcloud container clusters get-credentials primary --region=${REGION}
 
             - name: Create Kubernetes namespaces
-              working-directory: TP4/ej3/kubernetes
+              working-directory: kubernetes
               run: |
                   kubectl apply -f namespaces.yml
 
             # Despliega los objectos en la nube.
             - name: RabbitMQ deploy
-              working-directory: TP4/ej3/kubernetes
+              working-directory: kubernetes
               run: |
                   kubectl apply -f "https://github.com/rabbitmq/cluster-operator/releases/latest/download/cluster-operator.yml"
 
@@ -110,7 +109,7 @@ jobs:
                   sleep 120
 
             - name: Create RabbitMQ config
-              working-directory: TP4/ej3/kubernetes
+              working-directory: kubernetes
               run: |
                   RABBITMQ_PASSWORD=$(kubectl get secret rabbitmq-default-user -o jsonpath="{.data.password}" -n rabbitmq-namespace | base64 --decode)
                   RABBITMQ_USER=$(kubectl get secret rabbitmq-default-user -o jsonpath="{.data.username}" -n rabbitmq-namespace | base64 --decode)
@@ -129,7 +128,7 @@ jobs:
                   EOF
 
             - name: Create GCP config
-              working-directory: TP4/ej3/kubernetes
+              working-directory: kubernetes
               run: |
                   echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > credentials.json
 
@@ -137,12 +136,12 @@ jobs:
                   kubectl create configmap -n applications-namespace credentials-config --from-file=credentials.json
 
             - name: Create applications config
-              working-directory: TP4/ej3/kubernetes
+              working-directory: kubernetes
               run: |
                   kubectl apply -f config.yml
 
             - name: Deploy Redis
-              working-directory: TP4/ej3/kubernetes
+              working-directory: kubernetes
               run: |
                   kubectl apply -f volumes/redis-data.yml
                   kubectl apply -f deployments/redis-master.yml
@@ -151,7 +150,7 @@ jobs:
                   kubectl apply -f services/redis-replica.yml
 
             - name: Deploy applications
-              working-directory: TP4/ej3/kubernetes
+              working-directory: kubernetes
               run: |
                   kubectl apply -f deployments/entry-server.yml
                   kubectl apply -f deployments/split-service.yml
@@ -173,7 +172,7 @@ jobs:
 
               # Crea el cluster en la nube.
             - name: Terraform init
-              working-directory: TP4/ej3/kubernetes/terraform
+              working-directory: kubernetes/terraform
               env:
                   GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
               run: |

@@ -3,7 +3,6 @@ name: Workers pipeline
 on:
     push:
         branches: ['main']
-        paths: ['TP4/ej3/**']
 jobs:
     build-image:
         name: Build and Push Docker Image
@@ -14,18 +13,18 @@ jobs:
 
             - name: Copy credentials.json
               run: |
-                  echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > TP4/ej3/sobel-service/credentials.json
+                  echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > sobel-service/credentials.json
 
             - name: Login to Docker Hub
               uses: docker/login-action@v3
               with:
                   username: ${{ secrets.DOCKER_HUB_USERNAME }}
-                  password: ${{ secrets.DOCKER_HUB_TOKEN }}
+                  password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
             - name: Build and push sobel service Docker image
               uses: docker/build-push-action@v5
               with:
-                  context: ./TP4/ej3/sobel-service
+                  context: ./sobel-service
                   push: true
                   tags: ${{ secrets.DOCKER_HUB_USERNAME }}/sobel-service:latest
     infra-up:
@@ -71,7 +70,7 @@ jobs:
                   done
 
             - name: Create init.sh script for workers
-              working-directory: TP4/ej3/terraform
+              working-directory: terraform
               run: |
                   RABBITMQ_SERVICE_IP=$(kubectl get svc rabbitmq -n rabbitmq-namespace -o=jsonpath='{.status.loadBalancer.ingress[0].ip}')
                   RABBITMQ_PASSWORD=$(kubectl get secret rabbitmq-default-user -o jsonpath="{.data.password}" -n rabbitmq-namespace | base64 --decode)
@@ -94,7 +93,7 @@ jobs:
 
             # Crea el cluster en la nube.
             - name: Terraform init
-              working-directory: TP4/ej3/terraform
+              working-directory: terraform
               env:
                   GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
               run: |
@@ -126,7 +125,7 @@ jobs:
 
               # Crea el cluster en la nube.
             - name: Terraform init
-              working-directory: TP4/ej3/terraform
+              working-directory: TÑterraform
               env:
                   GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
               run: |

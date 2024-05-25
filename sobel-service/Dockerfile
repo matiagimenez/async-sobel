@@ -13,6 +13,7 @@ COPY ./requirements.txt requirements.txt
 COPY ./src/server.py server.py
 COPY ./src/utils utils
 COPY ./src/plugins plugins
+COPY ./credentials.json /credentials/credentials.json
 
 # Cambiar la propiedad de los archivos al usuario no root
 RUN chown -R nonroot:nonroot /sobel
