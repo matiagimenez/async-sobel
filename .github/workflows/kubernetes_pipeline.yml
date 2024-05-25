@@ -172,17 +172,47 @@ jobs:
               env:
                   ARGOCD_PWD: ${{ env.ARGOCD_PWD }}
 
-            - name: Create Root Application
+            - name: Create infra services
               working-directory: kubernetes/argocd
               run: |
+                  kubectl apply -f "https://github.com/rabbitmq/cluster-operator/releases/latest/download/cluster-operator.yml"
+                  sleep 60
                   kubectl apply -f services-project.yml
                   kubectl apply -f services.yml
+                  sleep 120
+
+            # Crear un nuevo ConfigMap con las credenciales de RabbitMQ
+            - name: Create RabbitMQ config
+              working-directory: kubernetes
+              run: |
+                  RABBITMQ_PASSWORD=$(kubectl get secret rabbitmq-default-user -o jsonpath="{.data.password}" -n argocd | base64 --decode)
+                  RABBITMQ_USER=$(kubectl get secret rabbitmq-default-user -o jsonpath="{.data.username}" -n argocd | base64 --decode)
+
+                  # Crear un nuevo ConfigMap con las credenciales de RabbitMQ
+                  cat <<EOF | kubectl apply -f -
+                  apiVersion: v1
+                  kind: ConfigMap
+                  metadata:
+                    name: rabbit-config
+                    namespace: argocd
+                  data:
+                    RABBITMQ_USER: $RABBITMQ_USER
+                    RABBITMQ_PASSWORD: $RABBITMQ_PASSWORD
+                    RABBITMQ_HOST: rabbitmq
+                  EOF
+
+            # Crear un nuevo ConfigMap con las credenciales de GCP
+            - name: Create GCP config
+              working-directory: kubernetes
+              run: |
+                  echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > credentials.json
+                  kubectl create configmap -n argocd credentials-config --from-file=credentials.json
+
+            - name: Create applications
+              working-directory: kubernetes/argocd
+              run: |
                   kubectl apply -f applications-project.yml
                   kubectl apply -f applications.yml
-
-            - name: Cleanup Port Forwarding
-              if: always()
-              run: killall kubectl
 
     infra-destroy:
         name: Destroy Kubernetes infrastructure

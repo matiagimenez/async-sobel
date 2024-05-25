@@ -64,7 +64,7 @@ jobs:
 
             - name: Wait for RabbitMQ service to be ready
               run: |
-                  while [[ $(kubectl get svc rabbitmq -n rabbitmq-namespace -o=jsonpath='{.status.loadBalancer.ingress[0].ip}') == "" ]]; do
+                  while [[ $(kubectl get svc rabbitmq -n argocd -o=jsonpath='{.status.loadBalancer.ingress[0].ip}') == "" ]]; do
                     echo "Waiting for RabbitMQ service to be ready..."
                     sleep 10
                   done
@@ -72,9 +72,9 @@ jobs:
             - name: Create init.sh script for workers
               working-directory: terraform
               run: |
-                  RABBITMQ_SERVICE_IP=$(kubectl get svc rabbitmq -n rabbitmq-namespace -o=jsonpath='{.status.loadBalancer.ingress[0].ip}')
-                  RABBITMQ_PASSWORD=$(kubectl get secret rabbitmq-default-user -o jsonpath="{.data.password}" -n rabbitmq-namespace | base64 --decode)
-                  RABBITMQ_USER=$(kubectl get secret rabbitmq-default-user -o jsonpath="{.data.username}" -n rabbitmq-namespace | base64 --decode)
+                  RABBITMQ_SERVICE_IP=$(kubectl get svc rabbitmq -n argocd -o=jsonpath='{.status.loadBalancer.ingress[0].ip}')
+                  RABBITMQ_PASSWORD=$(kubectl get secret rabbitmq-default-user -o jsonpath="{.data.password}" -n argocd| base64 --decode)
+                  RABBITMQ_USER=$(kubectl get secret rabbitmq-default-user -o jsonpath="{.data.username}" -n argocd | base64 --decode)
 
                   cat <<EOL > ./scripts/init.sh
                   sudo docker run -p 80:5000 \
