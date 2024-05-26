@@ -17,7 +17,7 @@ terraform plan -lock=false
 terraform apply -lock=false --auto-approve
 ```
 
--   Crear objetos en Kubernetes cluster
+-   Crear objetos en Kubernetes cluster.
 
 ```bash
 sh apply.sh
