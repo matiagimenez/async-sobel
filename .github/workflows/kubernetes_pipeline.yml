@@ -206,7 +206,7 @@ jobs:
                   kubectl exec -it rabbitmq-server-0 -n argocd -- rabbitmqctl set_policy ha-policy ".*sobel.*" \ '{"ha-mode":"exactly","ha-params":2,"ha-sync-mode":"automatic"}'
 
             # Crear un nuevo ConfigMap con las credenciales de GCP
-            - name: Create GCP config
+            - name: Create GCP configuration
               working-directory: kubernetes
               run: |
                   echo '${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}' > credentials.json
