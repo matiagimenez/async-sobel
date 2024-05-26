@@ -12,7 +12,7 @@ app = Flask(__name__)
 
 @app.route("/api/status", methods=['GET'])
 def status():
-    return jsonify({"code": "200", "status": "OK", "description": "Entry server is working..."})
+    return jsonify({"code": "200", "status": "OK", "description": "Entry server is working!"})
 
 
 @app.route("/api/result/<task_id>", methods=['GET'])
