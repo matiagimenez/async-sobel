@@ -95,7 +95,7 @@ jobs:
 
             - name: Get Kubernetes cluster credentials
               run: |
-                  REGION="us-east1-b"
+                  REGION="us-east4-a"
                   gcloud info
                   gcloud components list
                   gcloud container clusters get-credentials primary --region=${REGION}
@@ -145,7 +145,7 @@ jobs:
 
             - name: Get Kubernetes cluster credentials
               run: |
-                  REGION="us-east1-b"
+                  REGION="us-east4-a"
                   gcloud info
                   gcloud components list
                   gcloud container clusters get-credentials primary --region=${REGION}

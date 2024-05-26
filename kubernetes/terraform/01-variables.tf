@@ -10,12 +10,12 @@ variable "project" {
 
 variable "region" {
   type    = string
-  default = "us-east1" # us-central1
+  default = "us-east4" # us-central1
 }
 
 variable "zone" {
   type    = string
-  default = "us-east1-b" # us-central1-a
+  default = "us-east4-a" # us-central1-a
 }
 
 variable "bucket_name" {
