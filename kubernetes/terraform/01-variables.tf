@@ -15,7 +15,7 @@ variable "region" {
 
 variable "zone" {
   type    = string
-  default = "us-east4-a" # us-central1-a
+  default = "us-east4-a" # us-central1-a 
 }
 
 variable "bucket_name" {
