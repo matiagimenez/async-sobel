@@ -12,7 +12,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
     name: redis-replica
-    namespace: redis-namespace
+    namespace: argocd
 data:
     redis.conf: |+
         replicaof redis-master 6379
