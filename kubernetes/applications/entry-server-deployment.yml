@@ -4,7 +4,7 @@ metadata:
     name: entry-server
     namespace: argocd
 spec:
-    replicas: 2
+    replicas: 6
     selector:
         matchLabels:
             app: entry-server
